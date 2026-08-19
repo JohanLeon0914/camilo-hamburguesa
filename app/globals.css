@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  background: #0d0a09;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #0d0a09;
+  color: #fff8df;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  outline-color: #c52222;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
