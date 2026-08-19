@@ -34,7 +34,9 @@ export function Navbar() {
 
   async function signIn() {
     if (!hasSupabase) return;
-    await createClient().auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/auth/callback` } });
+    const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+    const siteUrl = configuredSiteUrl || window.location.origin;
+    await createClient().auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${siteUrl}/auth/callback` } });
   }
 
   async function signOut() {
