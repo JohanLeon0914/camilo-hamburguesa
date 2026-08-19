@@ -3,12 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 import type { Database } from "@/lib/supabase/database.types";
 
+export const dynamic = "force-dynamic";
+
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 
 export default async function ProfilePage() {
   if (!getSupabaseBrowserEnv()) {
-    return <Shell title="Configura Supabase" text="El perfil se sincroniza automÃ¡ticamente al activar Google OAuth." />;
+    return <Shell title="Configura Supabase" text="El perfil se sincroniza automáticamente al activar Google OAuth." />;
   }
 
   const supabase = createClient();
@@ -36,10 +38,10 @@ export default async function ProfilePage() {
             {addresses?.length ? addresses.map((address) => (
               <div key={address.id} className="rounded-md bg-paper p-3 text-sm">
                 <p className="font-black">{address.label}</p>
-                <p>{address.recipient_name} â€¢ {address.phone}</p>
+                <p>{address.recipient_name} · {address.phone}</p>
                 <p>{address.address}</p>
               </div>
-            )) : <p className="text-cream/60">AÃºn no tienes direcciones guardadas.</p>}
+            )) : <p className="text-cream/60">Aún no tienes direcciones guardadas.</p>}
           </div>
         </div>
       </div>
@@ -55,5 +57,4 @@ function Shell({ title, text }: { title: string; text: string }) {
     </section>
   );
 }
-
 

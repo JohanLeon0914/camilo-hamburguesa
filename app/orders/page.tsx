@@ -3,15 +3,18 @@ import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import { formatCOP, formatDateCO, shortOrderId } from "@/lib/utils";
 import type { OrderWithItems } from "@/lib/order-types";
+import { getOrderStatusLabel } from "@/lib/order-status";
+
+export const dynamic = "force-dynamic";
 
 export default async function OrdersPage() {
   if (!getSupabaseBrowserEnv()) {
-    return <Empty title="Configura Supabase" text="El historial se cargarÃ¡ cuando conectes el proyecto." />;
+    return <Empty title="Configura Supabase" text="El historial se cargará cuando conectes el proyecto." />;
   }
 
   const supabase = createClient();
   const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) return <Empty title="Inicia sesiÃ³n" text="Necesitas Google Login para ver tus pedidos." />;
+  if (!userData.user) return <Empty title="Inicia sesión" text="Necesitas iniciar sesión con Google para ver tus pedidos." />;
 
   const { data: rawOrders } = await supabase
     .from("orders")
@@ -21,7 +24,7 @@ export default async function OrdersPage() {
   const orders = (rawOrders ?? []) as unknown as OrderWithItems[];
 
   if (!orders?.length) {
-    return <Empty title="TodavÃ­a no tienes pedidos" text="Cuando confirmes tu primera hamburguesa aparecerÃ¡ aquÃ­." />;
+    return <Empty title="Todavía no tienes pedidos" text="Cuando confirmes tu primera hamburguesa aparecerá aquí." />;
   }
 
   return (
@@ -36,7 +39,7 @@ export default async function OrdersPage() {
                 <p className="text-sm text-cream/60">{formatDateCO(order.created_at)}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Badge>{order.status}</Badge>
+                <Badge>{getOrderStatusLabel(order.status)}</Badge>
                 {order.loyalty_discount_applied && <Badge tone="gold">10% descuento</Badge>}
               </div>
               <p className="text-xl font-black text-ember">{formatCOP(order.total)}</p>
@@ -53,7 +56,7 @@ function Empty({ title, text }: { title: string; text: string }) {
     <section className="mx-auto max-w-3xl px-4 py-16 text-center">
       <h1 className="text-3xl font-black">{title}</h1>
       <p className="mt-3 text-cream/65">{text}</p>
-      <Link href="/menu" className="mt-6 inline-flex rounded-md bg-ember px-5 py-3 font-black text-white">Ver menÃº</Link>
+      <Link href="/menu" className="mt-6 inline-flex rounded-md bg-ember px-5 py-3 font-black text-white">Ver menú</Link>
     </section>
   );
 }
@@ -65,5 +68,3 @@ function Badge({ children, tone = "dark" }: { children: React.ReactNode; tone?: 
     </span>
   );
 }
-
-

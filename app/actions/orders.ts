@@ -39,7 +39,7 @@ export async function createOrderAction(input: z.infer<typeof createOrderSchema>
     error: { message: string } | null;
   }>;
 
-  const rpcCreateOrder = supabase.rpc as unknown as CreateOrderRpc;
+  const rpcCreateOrder = (supabase.rpc as unknown as CreateOrderRpc).bind(supabase);
   const { data, error } = await rpcCreateOrder("create_order_secure", {
     payload_items: parsed.data.items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
     payload_address_id: parsed.data.addressId ?? null,

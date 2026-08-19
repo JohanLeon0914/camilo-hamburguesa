@@ -3,6 +3,8 @@ import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
+export const dynamic = "force-dynamic";
+
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 
 export default async function CheckoutPage() {

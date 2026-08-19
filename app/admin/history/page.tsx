@@ -5,6 +5,8 @@ import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 import { formatCOP, formatDateCO, shortOrderId } from "@/lib/utils";
 
 const PAGE_SIZE = 10;
+export const dynamic = "force-dynamic";
+
 type HistoryOrder = {
   id: string;
   delivered_at: string | null;
@@ -124,13 +126,13 @@ function HistoryShell({
 function Field(props: { name: string; label: string; type?: string; defaultValue?: string; placeholder?: string }) {
   return (
     <label>
-      <span className="mb-1 block text-sm font-bold">{props.label}</span>
+      <span className="mb-1 block text-sm font-bold ">{props.label}</span>
       <input
         name={props.name}
         type={props.type ?? "text"}
         defaultValue={props.defaultValue}
         placeholder={props.placeholder}
-        className="w-full rounded-md border border-char/15 px-3 py-2"
+        className="w-full rounded-md border border-char/15 px-3 py-2 text-black"
       />
     </label>
   );

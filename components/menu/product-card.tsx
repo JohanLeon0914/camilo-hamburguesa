@@ -19,7 +19,9 @@ export function ProductCard({ product, variant = "card", reverse = false }: Prod
 
   function addToCart() {
     addItem({ productId: product.id, name: product.name, price: product.price, image: product.image_url });
-    toast.success(`${product.name} agregado al carrito`);
+    toast.success(`${product.name} agregado al carrito`, {
+    position: "bottom-center" // Valores: top-right, top-center, top-left, bottom-right, bottom-center, bottom-left
+});
   }
 
   function orderNow() {

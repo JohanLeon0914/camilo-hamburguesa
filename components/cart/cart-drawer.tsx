@@ -27,7 +27,7 @@ export function CartDrawer() {
           className="fixed bottom-4 left-4 right-4 z-30 flex items-center justify-between rounded-md bg-char px-4 py-3 font-black text-white shadow-2xl md:hidden"
         >
           <span>Ver carrito</span>
-          <span>{itemCount()} productos â€¢ {formatCOP(subtotal())}</span>
+          <span>{itemCount()} productos · {formatCOP(subtotal())}</span>
         </button>
       )}
 
@@ -51,10 +51,10 @@ export function CartDrawer() {
           {visibleItems.length === 0 ? (
             <div className="grid flex-1 place-items-center p-8 text-center">
               <div>
-                <p className="text-2xl font-black">Tu carrito estÃ¡ vacÃ­o</p>
-                <p className="mt-2 text-cream/60">Explora el menÃº y encuentra tu prÃ³xima hamburguesa.</p>
+                <p className="text-2xl font-black">Tu carrito está vacío</p>
+                <p className="mt-2 text-cream/60">Explora el menú y encuentra tu próxima hamburguesa.</p>
                 <Link href="/menu" onClick={closeCart} className="mt-5 inline-flex rounded-md bg-ember px-5 py-3 font-black text-white">
-                  Ver menÃº
+                  Ver menú
                 </Link>
               </div>
             </div>
@@ -103,5 +103,4 @@ export function CartDrawer() {
     </>
   );
 }
-
 

@@ -53,8 +53,8 @@ export function Navbar() {
         </Link>
         <div className="hidden items-center gap-1 md:flex">
           <NavLink href="/" icon={<Home size={17} />}>Inicio</NavLink>
-          <NavLink href="/menu" icon={<Menu size={17} />}>Menu</NavLink>
-          <NavLink href="/orders" icon={<UserRound size={17} />}>Mis ordenes</NavLink>
+          <NavLink href="/menu" icon={<Menu size={17} />}>Menú</NavLink>
+          <NavLink href="/orders" icon={<UserRound size={17} />}>Mis órdenes</NavLink>
           {isAdmin && <NavLink href="/admin" icon={<ShieldCheck size={17} />}>Admin</NavLink>}
         </div>
         <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export function Navbar() {
             <ShoppingCart size={19} />
             {hasHydrated && itemCount > 0 && <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-mustard px-1 text-xs text-char">{itemCount}</span>}
           </button>
-          {email ? <button onClick={signOut} className="rounded-md bg-char px-4 py-2 text-sm font-bold text-white transition hover:bg-ember">Salir</button> : <button onClick={signIn} disabled={!hasSupabase} className={cn("rounded-md bg-ember px-4 py-2 text-sm font-bold text-white transition hover:bg-char", !hasSupabase && "cursor-not-allowed opacity-60")}>Iniciar sesion</button>}
+          {email ? <button onClick={signOut} className="rounded-md bg-char px-4 py-2 text-sm font-bold text-white transition hover:bg-ember">Salir</button> : <button onClick={signIn} disabled={!hasSupabase} className={cn("rounded-md bg-ember px-4 py-2 text-sm font-bold text-white transition hover:bg-char", !hasSupabase && "cursor-not-allowed opacity-60")}>Iniciar sesión</button>}
         </div>
       </nav>
     </header>

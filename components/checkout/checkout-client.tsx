@@ -68,9 +68,9 @@ export function CheckoutClient({
   if (items.length === 0) {
     return (
       <section className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <h1 className="text-3xl font-black">Tu carrito estÃ¡ vacÃ­o</h1>
+        <h1 className="text-3xl font-black">Tu carrito está vacío</h1>
         <p className="mt-3 text-cream/65">Agrega una hamburguesa antes de confirmar el pedido.</p>
-        <Link href="/menu" className="mt-6 inline-flex rounded-md bg-ember px-5 py-3 font-black text-white">Ver menÃº</Link>
+        <Link href="/menu" className="mt-6 inline-flex rounded-md bg-ember px-5 py-3 font-black text-white">Ver menú</Link>
       </section>
     );
   }
@@ -86,7 +86,7 @@ export function CheckoutClient({
 
         <div className="rounded-lg bg-surface p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-black">DirecciÃ³n de entrega</h2>
+            <h2 className="text-xl font-black">Dirección de entrega</h2>
             {!useNewAddress && canCreateNewAddress && (
               <button type="button" onClick={() => setUseNewAddress(true)} className="flex items-center gap-2 font-bold text-ember">
                 <Plus size={17} /> Nueva
@@ -97,7 +97,7 @@ export function CheckoutClient({
           {!useNewAddress && addresses.length > 0 ? (
             <div className="grid gap-3">
               {addresses.map((address) => (
-                <label key={address.id} className="flex cursor-pointer gap-3 rounded-md border border-char/10 p-4 has-[:checked]:border-ember has-[:checked]:bg-red-50">
+                <label key={address.id} className="flex cursor-pointer gap-3 rounded-md border border-char/10 p-4 has-[:checked]:border-ember has-[:checked]:bg-red-50 text-black">
                   <input
                     type="radio"
                     name="addressId"
@@ -105,27 +105,26 @@ export function CheckoutClient({
                     checked={selectedAddressId === address.id}
                     onChange={() => setSelectedAddressId(address.id)}
                   />
-                  <span>
+                  <span className="text-black">
                     <span className="flex items-center gap-2 font-black"><Home size={16} /> {address.label}</span>
-                    <span className="mt-1 block text-sm text-cream/65">{address.recipient_name} â€¢ {address.phone}</span>
-                    <span className="block text-sm text-cream/65">{address.address}</span>
+                    <span className="mt-1 block text-sm text-black">{address.recipient_name} {address.phone}</span>
+                    <span className="block text-sm text-black">{address.address}</span>
                   </span>
                 </label>
               ))}
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field name="label" label="Etiqueta" placeholder="Casa" />
-              <Field name="recipientName" label="Nombre" placeholder="Camilo LeÃ³n" />
+              <Field name="recipientName" label="Nombre" placeholder="Johan" />
               <Field name="phone" label="Celular" placeholder="300 000 0000" />
-              <Field name="address" label="DirecciÃ³n" placeholder="Calle 10 # 20-30" />
+              <Field name="address" label="Dirección" placeholder="Calle 10 # 20-30" />
               <label className="sm:col-span-2">
-                <span className="mb-1 block text-sm font-bold">InformaciÃ³n adicional</span>
+                <span className="mb-1 block text-sm font-bold">Información adicional</span>
                 <textarea name="addressDetails" rows={3} className="w-full rounded-md border border-char/15 px-3 py-2" placeholder="Apartamento, barrio, referencia o notas de entrega" />
               </label>
               {addresses.length > 0 && (
                 <button type="button" onClick={() => setUseNewAddress(false)} className="text-left font-bold text-ember">
-                  Usar una direcciÃ³n guardada
+                  Usar una dirección guardada
                 </button>
               )}
               {!canCreateNewAddress && (
@@ -175,7 +174,7 @@ function Field({ name, label, placeholder }: { name: string; label: string; plac
   return (
     <label>
       <span className="mb-1 block text-sm font-bold">{label}</span>
-      <input name={name} className="w-full rounded-md border border-char/15 px-3 py-2" placeholder={placeholder} />
+      <input name={name} className="w-full rounded-md border border-char/15 px-3 py-2 text-black" placeholder={placeholder} />
     </label>
   );
 }
@@ -188,5 +187,4 @@ function Row({ label, value, strong = false }: { label: string; value: string; s
     </div>
   );
 }
-
 

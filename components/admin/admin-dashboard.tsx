@@ -52,7 +52,7 @@ export function AdminDashboard({ initialOrders, setupMissing = false }: { initia
   }, []);
 
   function markDelivered(orderId: string) {
-    if (!window.confirm("Â¿Marcar esta orden como entregada?")) return;
+    if (!window.confirm("¿Marcar esta orden como entregada?")) return;
     startTransition(async () => {
       const result = await markOrderDeliveredAction(orderId);
       if (!result.ok) {
@@ -73,9 +73,14 @@ export function AdminDashboard({ initialOrders, setupMissing = false }: { initia
             <p className="text-sm font-black uppercase text-mustard">Admin</p>
             <h1 className="text-3xl font-black">Pedidos activos</h1>
           </div>
-          <Link href="/admin/history" className="rounded-md border border-cream/20 px-4 py-2 font-black hover:bg-cream hover:text-char">
-            Pedidos entregados
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/admin/products" className="rounded-md border border-cream/20 px-4 py-2 font-black hover:bg-cream hover:text-char">
+              Gestionar menú
+            </Link>
+            <Link href="/admin/history" className="rounded-md border border-cream/20 px-4 py-2 font-black hover:bg-cream hover:text-char">
+              Pedidos entregados
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -100,12 +105,12 @@ export function AdminDashboard({ initialOrders, setupMissing = false }: { initia
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-lg font-black">{shortOrderId(order.id)}</p>
-                      <p className="text-sm text-cream/60">{order.customer_name} â€¢ {formatDateCO(order.created_at)}</p>
+                      <p className="text-sm text-cream/60">{order.customer_name} · {formatDateCO(order.created_at)}</p>
                     </div>
                     <p className="font-black text-ember">{formatCOP(order.total)}</p>
                   </div>
                   <p className="mt-2 text-sm font-bold">{order.order_items.reduce((sum, item) => sum + item.quantity, 0)} productos</p>
-                  {order.loyalty_discount_applied && <p className="mt-2 inline-flex items-center gap-1 rounded-md bg-mustard px-2 py-1 text-xs font-black"><TicketPercent size={14} /> 10% descuento</p>}
+                  {order.loyalty_discount_applied && <p className="mt-2 inline-flex items-center gap-1 rounded-md bg-mustard px-2 py-1 text-xs font-black text-black"><TicketPercent size={14} /> 10% descuento</p>}
                 </button>
               ))}
             </div>
@@ -184,5 +189,3 @@ function Row({ label, value, strong = false }: { label: string; value: string; s
     </div>
   );
 }
-
-

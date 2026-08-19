@@ -4,6 +4,9 @@ import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import { formatCOP, formatDateCO, shortOrderId } from "@/lib/utils";
 import type { OrderWithItems } from "@/lib/order-types";
+import { getOrderStatusLabel } from "@/lib/order-status";
+
+export const dynamic = "force-dynamic";
 
 export default async function OrderDetailPage({ params }: { params: { id: string } }) {
   if (!getSupabaseBrowserEnv()) notFound();
@@ -28,7 +31,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
             <h1 className="mt-1 text-4xl font-black">Orden {shortOrderId(order.id)}</h1>
             <p className="mt-2 text-cream/60">{formatDateCO(order.created_at)}</p>
           </div>
-          <span className="rounded-md bg-char px-3 py-1 text-sm font-black uppercase text-white">{order.status}</span>
+          <span className="rounded-md bg-char px-3 py-1 text-sm font-black uppercase text-white">{getOrderStatusLabel(order.status)}</span>
         </div>
 
         <div className="mt-8 grid gap-6 md:grid-cols-2">

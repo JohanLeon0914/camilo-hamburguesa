@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 import type { OrderWithItems } from "@/lib/order-types";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   if (!getSupabaseBrowserEnv()) {
     return <AdminDashboard initialOrders={[]} setupMissing />;

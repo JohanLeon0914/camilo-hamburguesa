@@ -6,7 +6,7 @@ export function ProductGrid({ products, layout = "grid" }: { products: Product[]
     return (
       <div className="rounded-lg border border-dashed border-cream/20 bg-surface p-8 text-center text-cream">
         <h2 className="text-xl font-black">No hay hamburguesas disponibles</h2>
-        <p className="mt-2 text-cream/60">Cuando se carguen productos en Supabase apareceran aqui.</p>
+        <p className="mt-2 text-cream/60">Cuando se carguen productos en Supabase aparecerán aquí.</p>
       </div>
     );
   }
