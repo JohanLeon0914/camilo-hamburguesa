@@ -6,14 +6,19 @@ import { createOrderSchema } from "@/lib/validations";
 import { createClient } from "@/lib/supabase/server";
 import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 import type { Json } from "@/lib/supabase/database.types";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createMercadoPagoPreference, isMercadoPagoConfigured } from "@/lib/mercadopago";
 
 export type CreateOrderResult =
-  | { ok: true; orderId: string; total: number }
+  | { ok: true; orderId: string; total: number; checkoutUrl: string }
   | { ok: false; message: string };
 
 export async function createOrderAction(input: z.infer<typeof createOrderSchema>): Promise<CreateOrderResult> {
   if (!getSupabaseBrowserEnv()) {
     return { ok: false, message: "Configura Supabase antes de crear pedidos reales." };
+  }
+  if (!isMercadoPagoConfigured()) {
+    return { ok: false, message: "Mercado Pago aún no está configurado. Agrega MERCADOPAGO_ACCESS_TOKEN al .env del servidor." };
   }
 
   const parsed = createOrderSchema.safeParse(input);
@@ -51,10 +56,18 @@ export async function createOrderAction(input: z.infer<typeof createOrderSchema>
     return { ok: false, message: "No pudimos crear tu pedido. Inténtalo nuevamente." };
   }
 
-  revalidatePath("/orders");
-  revalidatePath("/admin");
-
-  return { ok: true, orderId: data[0].order_id, total: data[0].total };
+  try {
+    const preference = await createMercadoPagoPreference(data[0].order_id, data[0].total, userData.user.email ?? "");
+    if (!preference.checkoutUrl) throw new Error("Mercado Pago no devolvió checkoutUrl");
+    await createAdminClient().from("orders").update({ mercado_pago_preference_id: preference.id }).eq("id", data[0].order_id);
+    revalidatePath("/orders");
+    revalidatePath("/admin");
+    return { ok: true, orderId: data[0].order_id, total: data[0].total, checkoutUrl: preference.checkoutUrl };
+  } catch (error) {
+    console.error("Mercado Pago preference failed", error);
+    await createAdminClient().from("orders").update({ payment_status: "failed" }).eq("id", data[0].order_id);
+    return { ok: false, message: "No pudimos abrir el pago de Mercado Pago. Inténtalo nuevamente." };
+  }
 }
 
 export async function markOrderDeliveredAction(orderId: string) {

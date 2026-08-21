@@ -51,6 +51,10 @@ La migración crea tablas, índices, constraints, RLS, trigger de perfiles, lím
 
 ## Flujo
 
+### Mercado Pago / PSE
+
+Ejecuta `supabase/migrations/202608210001_mercadopago_payments.sql`. Agrega `MERCADOPAGO_ACCESS_TOKEN` al entorno del servidor y registra `https://TU_DOMINIO/api/webhooks/mercadopago` como notificación de pagos en Mercado Pago. Checkout Pro permite ofrecer PSE en Colombia; el cliente será redirigido a Mercado Pago y el webhook verificará el pago consultando su API antes de mostrar la orden al administrador.
+
 El cliente puede navegar el menú sin sesión, agregar productos al carrito y conservarlos aunque salga de la página. Para confirmar pedido debe iniciar sesión con Google. El servidor envía únicamente `productId`, cantidad y dirección; Supabase calcula precios, subtotal, descuento y total.
 
 El admin entra en `/admin`, recibe pedidos por Supabase Realtime, abre el detalle y marca como entregado. El historial está en `/admin/history` con filtros y paginación.

@@ -59,9 +59,8 @@ export function CheckoutClient({
         return;
       }
 
-      clearCart();
-      toast.success("Pedido recibido");
-      router.push(`/orders/${result.orderId}`);
+      toast.success("Redirigiendo a Mercado Pago");
+      window.location.assign(result.checkoutUrl);
     });
   }
 
@@ -170,6 +169,7 @@ export function CheckoutClient({
   );
 }
 
+
 function Field({ name, label, placeholder }: { name: string; label: string; placeholder: string }) {
   return (
     <label>
@@ -187,4 +187,3 @@ function Row({ label, value, strong = false }: { label: string; value: string; s
     </div>
   );
 }
-

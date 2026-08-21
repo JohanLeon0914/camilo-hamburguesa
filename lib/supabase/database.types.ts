@@ -74,6 +74,10 @@ export type Database = {
           delivery_address: string;
           delivery_details: string | null;
           status: "pending" | "preparing" | "ready" | "delivered" | "cancelled";
+          payment_status: "pending" | "paid" | "failed" | "expired";
+          mercado_pago_preference_id: string | null;
+          mercado_pago_payment_id: string | null;
+          paid_at: string | null;
           subtotal: number;
           discount_percentage: number;
           discount_amount: number;
