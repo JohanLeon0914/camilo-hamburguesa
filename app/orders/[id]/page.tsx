@@ -69,7 +69,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
           <div>
             <h2 className="font-black">Entrega</h2>
             <div className="mt-3 rounded-md bg-paper p-4 text-sm leading-7 text-cream/75">
-              <p className="font-black text-char">{currentOrder.customer_name}</p>
+              <p className="font-black text-char text-white">{currentOrder.customer_name}</p>
               <p>{currentOrder.customer_phone}</p>
               <p>{currentOrder.delivery_address}</p>
               {currentOrder.delivery_details && <p>{currentOrder.delivery_details}</p>}

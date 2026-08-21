@@ -1,12 +1,14 @@
 ﻿"use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { ShoppingBasket, Zap } from "lucide-react";
+import { LogIn, ShoppingBasket, X, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { formatCOP } from "@/lib/utils";
 import type { Product } from "@/lib/products";
 import { useCartStore } from "@/stores/cart-store";
+import { createClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 
 type ProductCardProps = {
   product: Product;
@@ -16,6 +18,16 @@ type ProductCardProps = {
 
 export function ProductCard({ product, variant = "card", reverse = false }: ProductCardProps) {
   const addItem = useCartStore((state) => state.addItem);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  useEffect(() => {
+    if (!getSupabaseBrowserEnv()) return;
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setIsLoggedIn(Boolean(data.user)));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setIsLoggedIn(Boolean(session?.user)));
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   function addToCart() {
     addItem({ productId: product.id, name: product.name, price: product.price, image: product.image_url });
@@ -26,6 +38,15 @@ export function ProductCard({ product, variant = "card", reverse = false }: Prod
 
   function orderNow() {
     addItem({ productId: product.id, name: product.name, price: product.price, image: product.image_url });
+    if (isLoggedIn) window.location.assign("/checkout");
+    else setShowLoginModal(true);
+  }
+
+  async function signInWithGoogle() {
+    await createClient().auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/checkout")}` }
+    });
   }
 
   const image = (
@@ -50,19 +71,37 @@ export function ProductCard({ product, variant = "card", reverse = false }: Prod
         <button disabled={!product.is_available} onClick={addToCart} className="flex items-center justify-center gap-2 rounded-md border border-cream/80 px-3 py-3 text-sm font-black text-cream transition hover:border-mustard hover:text-mustard disabled:cursor-not-allowed disabled:opacity-50">
           <ShoppingBasket size={17} /> Agregar
         </button>
-        <Link href="/checkout" onClick={orderNow} className="flex items-center justify-center gap-2 rounded-md bg-ember px-3 py-3 text-sm font-black text-white transition hover:bg-char">
+        <button type="button" disabled={!product.is_available} onClick={orderNow} className="flex items-center justify-center gap-2 rounded-md bg-ember px-3 py-3 text-sm font-black text-white transition hover:bg-char disabled:cursor-not-allowed disabled:opacity-50">
           <Zap size={17} /> Ordenar
-        </Link>
+        </button>
       </div>
     </div>
   );
 
   return (
+    <>
     <article className={`group overflow-hidden rounded-lg border-2 border-char/10 bg-surface shadow-sm transition hover:border-ember hover:shadow-xl ${variant === "diagonal" ? `flex flex-col lg:min-h-80 lg:flex-row ${reverse ? "lg:flex-row-reverse" : ""}` : ""}`}>
       {image}
       {content}
     </article>
+    {showLoginModal && (
+      <div className="fixed inset-0 z-[60] grid place-items-center bg-char/60 p-4" role="dialog" aria-modal="true" aria-labelledby={`login-product-${product.id}`}>
+        <div className="w-full max-w-md rounded-lg bg-paper p-6 text-char shadow-2xl">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="font-black uppercase text-ember">Antes de ordenar</p>
+              <h2 id={`login-product-${product.id}`} className="mt-1 text-2xl font-black text-white">Inicia sesión con Google</h2>
+            </div>
+            <button type="button" onClick={() => setShowLoginModal(false)} className="rounded-md p-2 hover:bg-surface" aria-label="Cerrar ventana"><X size={20} /></button>
+          </div>
+          <p className="mt-4 text-sm text-white/70">Necesitamos tu cuenta para guardar la dirección, crear el pedido y mostrarte el estado del pago.</p>
+          <button type="button" onClick={signInWithGoogle} disabled={!getSupabaseBrowserEnv()} className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-ember px-5 py-3 font-black text-white transition hover:bg-char disabled:opacity-60">
+            <LogIn size={18} /> Continuar con Google
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
-
 

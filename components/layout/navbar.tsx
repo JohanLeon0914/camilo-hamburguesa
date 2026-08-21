@@ -56,7 +56,7 @@ export function Navbar() {
         <div className="hidden items-center gap-1 md:flex">
           <NavLink href="/" icon={<Home size={17} />}>Inicio</NavLink>
           <NavLink href="/menu" icon={<Menu size={17} />}>Menú</NavLink>
-          <NavLink href="/orders" icon={<UserRound size={17} />}>Mis órdenes</NavLink>
+          {email && <NavLink href="/orders" icon={<UserRound size={17} />}>Mis órdenes</NavLink>}
           {isAdmin && <NavLink href="/admin" icon={<ShieldCheck size={17} />}>Admin</NavLink>}
         </div>
         <div className="flex items-center gap-2">
