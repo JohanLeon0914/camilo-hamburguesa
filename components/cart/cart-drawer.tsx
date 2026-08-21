@@ -2,22 +2,49 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
+import { LogIn, Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/stores/cart-store";
 import { formatCOP } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, setQuantity, removeItem, subtotal, itemCount } = useCartStore();
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     setHasHydrated(true);
   }, []);
 
+  useEffect(() => {
+    if (!getSupabaseBrowserEnv()) return;
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setIsLoggedIn(Boolean(data.user)));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setIsLoggedIn(Boolean(session?.user)));
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
   const visibleItems = hasHydrated ? items : [];
   const visibleItemCount = hasHydrated ? itemCount() : 0;
   const visibleSubtotal = hasHydrated ? subtotal() : 0;
+
+  function goToCheckout() {
+    if (isLoggedIn) {
+      window.location.assign("/checkout");
+      return;
+    }
+    setShowLoginModal(true);
+  }
+
+  async function signInWithGoogle() {
+    await createClient().auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/checkout")}` }
+    });
+  }
 
   return (
     <>
@@ -92,15 +119,31 @@ export function CartDrawer() {
                   <span>Subtotal</span>
                   <span>{formatCOP(visibleSubtotal)}</span>
                 </div>
-                <Link href="/checkout" onClick={closeCart} className="block rounded-md bg-ember px-5 py-3 text-center font-black text-white transition hover:bg-char">
-                  Ir al checkout
-                </Link>
+                <button type="button" onClick={goToCheckout} className="block w-full rounded-md bg-ember px-5 py-3 text-center font-black text-white transition hover:bg-char">
+                  Ordenar
+                </button>
               </div>
             </>
           )}
         </aside>
       </div>
+      {showLoginModal && (
+        <div className="fixed inset-0 z-[60] grid place-items-center bg-char/60 p-4" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
+          <div className="w-full max-w-md rounded-lg bg-paper p-6 text-char shadow-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-black uppercase text-ember">Antes de ordenar</p>
+                <h2 id="login-modal-title" className="mt-1 text-2xl font-black">Inicia sesión con Google</h2>
+              </div>
+              <button type="button" onClick={() => setShowLoginModal(false)} className="rounded-md p-2 hover:bg-surface" aria-label="Cerrar ventana"><X size={20} /></button>
+            </div>
+            <p className="mt-4 text-sm text-char/70">Necesitamos tu cuenta para guardar la dirección, crear el pedido y mostrarte el estado del pago.</p>
+            <button type="button" onClick={signInWithGoogle} disabled={!getSupabaseBrowserEnv()} className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-ember px-5 py-3 font-black text-white transition hover:bg-char disabled:opacity-60">
+              <LogIn size={18} /> Continuar con Google
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
-

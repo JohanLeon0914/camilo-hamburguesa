@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 import type { Json } from "@/lib/supabase/database.types";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createMercadoPagoPreference, isMercadoPagoConfigured } from "@/lib/mercadopago";
+import { createMercadoPagoPreference, isMercadoPagoConfigured, syncMercadoPagoPayment } from "@/lib/mercadopago";
 
 export type CreateOrderResult =
   | { ok: true; orderId: string; total: number; checkoutUrl: string }
@@ -96,4 +96,24 @@ export async function markOrderDeliveredAction(orderId: string) {
   revalidatePath("/admin");
   revalidatePath("/admin/history");
   return { ok: true };
+}
+
+export async function confirmMercadoPagoPaymentAction(orderId: string, paymentId: string) {
+  const supabase = createClient();
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return { ok: false, paid: false };
+
+  const { data: order } = await supabase.from("orders").select("id").eq("id", orderId).eq("user_id", userData.user.id).maybeSingle();
+  if (!order) return { ok: false, paid: false };
+
+  try {
+    const result = await syncMercadoPagoPayment(orderId, paymentId);
+    revalidatePath(`/orders/${orderId}`);
+    revalidatePath("/orders");
+    revalidatePath("/admin");
+    return { ok: true, paid: result.paid };
+  } catch (error) {
+    console.error("Mercado Pago polling failed", error);
+    return { ok: false, paid: false };
+  }
 }

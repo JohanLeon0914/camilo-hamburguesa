@@ -6,6 +6,7 @@ import { formatCOP, formatDateCO, shortOrderId } from "@/lib/utils";
 import type { OrderWithItems } from "@/lib/order-types";
 import { getOrderStatusLabel } from "@/lib/order-status";
 import { syncMercadoPagoPayment } from "@/lib/mercadopago";
+import { PaymentStatusSync } from "@/components/orders/payment-status-sync";
 
 export const dynamic = "force-dynamic";
 
@@ -51,12 +52,7 @@ export default async function OrderDetailPage({ params, searchParams }: { params
           <span className="rounded-md bg-char px-3 py-1 text-sm font-black uppercase text-white">{getOrderStatusLabel(currentOrder.status)}</span>
         </div>
 
-        {searchParams.payment === "success" && currentOrder.payment_status === "paid" && (
-          <p className="mt-5 rounded-md bg-green-100 px-4 py-3 font-bold text-green-900">Pago confirmado correctamente.</p>
-        )}
-        {searchParams.payment === "success" && currentOrder.payment_status !== "paid" && (
-          <p className="mt-5 rounded-md bg-mustard px-4 py-3 font-bold text-char">Mercado Pago recibió tu pago. Estamos validando la confirmación.</p>
-        )}
+        {searchParams.payment === "success" && <PaymentStatusSync orderId={currentOrder.id} paymentId={searchParams.payment_id} initialPaid={currentOrder.payment_status === "paid"} />}
 
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           <div>
@@ -98,5 +94,4 @@ function Row({ label, value, strong = false }: { label: string; value: string; s
     </div>
   );
 }
-
 
