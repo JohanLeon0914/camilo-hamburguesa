@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type MercadoPagoPayment = {
   id?: number;
@@ -60,6 +61,24 @@ export async function getMercadoPagoPayment(paymentId: string) {
   return request(`/v1/payments/${encodeURIComponent(paymentId)}`) as Promise<MercadoPagoPayment>;
 }
 
+export async function syncMercadoPagoPayment(orderId: string, paymentId: string) {
+  const payment = await getMercadoPagoPayment(paymentId);
+  if (payment.external_reference !== orderId) return { paid: false, status: "invalid_reference" };
+
+  const db = createAdminClient();
+  const { data: order, error: orderError } = await db.from("orders").select("id,total").eq("id", orderId).single();
+  if (orderError || !order) return { paid: false, status: "order_not_found" };
+
+  const paid = payment.status === "approved" && payment.currency_id === "COP" && payment.transaction_amount === order.total;
+  const { error } = await db.from("orders").update({
+    payment_status: paid ? "paid" : payment.status === "rejected" ? "failed" : "pending",
+    mercado_pago_payment_id: String(payment.id ?? paymentId),
+    paid_at: paid ? new Date().toISOString() : null
+  }).eq("id", orderId);
+  if (error) throw new Error(`No se pudo actualizar el pago en Supabase: ${error.message}`);
+  return { paid, status: payment.status ?? "unknown" };
+}
+
 export function isValidMercadoPagoSignature(signature: string | null, requestId: string | null, dataId: string) {
   const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
   if (!secret) return true;
@@ -73,4 +92,3 @@ export function isValidMercadoPagoSignature(signature: string | null, requestId:
   const receivedBuffer = Buffer.from(hash, "hex");
   return expectedBuffer.length === receivedBuffer.length && timingSafeEqual(expectedBuffer, receivedBuffer);
 }
-

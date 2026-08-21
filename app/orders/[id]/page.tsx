@@ -5,14 +5,15 @@ import { createClient } from "@/lib/supabase/server";
 import { formatCOP, formatDateCO, shortOrderId } from "@/lib/utils";
 import type { OrderWithItems } from "@/lib/order-types";
 import { getOrderStatusLabel } from "@/lib/order-status";
+import { syncMercadoPagoPayment } from "@/lib/mercadopago";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrderDetailPage({ params }: { params: { id: string } }) {
+export default async function OrderDetailPage({ params, searchParams }: { params: { id: string }; searchParams: { payment?: string; payment_id?: string } }) {
   if (!getSupabaseBrowserEnv()) notFound();
 
   const supabase = createClient();
-  const { data: rawOrder } = await supabase
+  let { data: rawOrder } = await supabase
     .from("orders")
     .select("*, order_items(*)")
     .eq("id", params.id)
@@ -20,6 +21,22 @@ export default async function OrderDetailPage({ params }: { params: { id: string
   const order = rawOrder as unknown as OrderWithItems | null;
 
   if (!order) notFound();
+
+  if (searchParams.payment_id && order.payment_status !== "paid") {
+    try {
+      await syncMercadoPagoPayment(order.id, searchParams.payment_id);
+      const refreshed = await supabase
+        .from("orders")
+        .select("*, order_items(*)")
+        .eq("id", params.id)
+        .single();
+      rawOrder = refreshed.data;
+    } catch (error) {
+      console.error("Mercado Pago return confirmation failed", error);
+    }
+  }
+
+  const currentOrder = rawOrder as unknown as OrderWithItems;
 
   return (
     <section className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
@@ -29,16 +46,23 @@ export default async function OrderDetailPage({ params }: { params: { id: string
           <div>
             <p className="font-black uppercase text-ember">Pedido recibido</p>
             <h1 className="mt-1 text-4xl font-black">Orden {shortOrderId(order.id)}</h1>
-            <p className="mt-2 text-cream/60">{formatDateCO(order.created_at)}</p>
+            <p className="mt-2 text-cream/60">{formatDateCO(currentOrder.created_at)}</p>
           </div>
-          <span className="rounded-md bg-char px-3 py-1 text-sm font-black uppercase text-white">{getOrderStatusLabel(order.status)}</span>
+          <span className="rounded-md bg-char px-3 py-1 text-sm font-black uppercase text-white">{getOrderStatusLabel(currentOrder.status)}</span>
         </div>
+
+        {searchParams.payment === "success" && currentOrder.payment_status === "paid" && (
+          <p className="mt-5 rounded-md bg-green-100 px-4 py-3 font-bold text-green-900">Pago confirmado correctamente.</p>
+        )}
+        {searchParams.payment === "success" && currentOrder.payment_status !== "paid" && (
+          <p className="mt-5 rounded-md bg-mustard px-4 py-3 font-bold text-char">Mercado Pago recibió tu pago. Estamos validando la confirmación.</p>
+        )}
 
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           <div>
             <h2 className="font-black">Productos</h2>
             <div className="mt-3 space-y-3">
-              {order.order_items.map((item) => (
+              {currentOrder.order_items.map((item) => (
                 <div key={item.id} className="flex justify-between rounded-md bg-paper p-3">
                   <span>{item.quantity}x {item.product_name}</span>
                   <span className="font-black">{formatCOP(item.line_total)}</span>
@@ -49,15 +73,15 @@ export default async function OrderDetailPage({ params }: { params: { id: string
           <div>
             <h2 className="font-black">Entrega</h2>
             <div className="mt-3 rounded-md bg-paper p-4 text-sm leading-7 text-cream/75">
-              <p className="font-black text-char">{order.customer_name}</p>
-              <p>{order.customer_phone}</p>
-              <p>{order.delivery_address}</p>
-              {order.delivery_details && <p>{order.delivery_details}</p>}
+              <p className="font-black text-char">{currentOrder.customer_name}</p>
+              <p>{currentOrder.customer_phone}</p>
+              <p>{currentOrder.delivery_address}</p>
+              {currentOrder.delivery_details && <p>{currentOrder.delivery_details}</p>}
             </div>
             <div className="mt-4 space-y-2 rounded-md bg-char p-4 text-cream">
-              <Row label="Subtotal" value={formatCOP(order.subtotal)} />
-              <Row label="Descuento" value={`-${formatCOP(order.discount_amount)}`} />
-              <Row label="Total" value={formatCOP(order.total)} strong />
+              <Row label="Subtotal" value={formatCOP(currentOrder.subtotal)} />
+              <Row label="Descuento" value={`-${formatCOP(currentOrder.discount_amount)}`} />
+              <Row label="Total" value={formatCOP(currentOrder.total)} strong />
             </div>
           </div>
         </div>
