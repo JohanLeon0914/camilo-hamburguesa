@@ -59,8 +59,9 @@ export function CheckoutClient({
         return;
       }
 
-      toast.success("Redirigiendo a Mercado Pago");
-      window.location.assign(result.checkoutUrl);
+      clearCart();
+      toast.success("Pedido creado. Abriendo WhatsApp");
+      window.location.assign(result.whatsappUrl);
     });
   }
 

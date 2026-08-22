@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { CheckCircle2, Clock, ReceiptText, TicketPercent } from "lucide-react";
-import { markOrderDeliveredAction } from "@/app/actions/orders";
+import { cancelOrderAction, markOrderDeliveredAction } from "@/app/actions/orders";
 import { createClient } from "@/lib/supabase/client";
 import { getSupabaseBrowserEnv } from "@/lib/supabase/env";
 import type { Database } from "@/lib/supabase/database.types";
@@ -40,9 +40,9 @@ export function AdminDashboard({ initialOrders, setupMissing = false }: { initia
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, (payload) => {
         const updated = payload.new as Database["public"]["Tables"]["orders"]["Row"];
-        setOrders((current) => current.filter((order) => order.id !== updated.id || updated.status !== "delivered")
+        setOrders((current) => current.filter((order) => order.id !== updated.id || !["delivered", "cancelled"].includes(updated.status))
           .map((order) => (order.id === updated.id ? { ...order, ...updated } : order)));
-        if (updated.status === "delivered") setSelected(null);
+        if (["delivered", "cancelled"].includes(updated.status)) setSelected(null);
       })
       .subscribe();
 
@@ -60,6 +60,17 @@ export function AdminDashboard({ initialOrders, setupMissing = false }: { initia
         return;
       }
       toast.success("Orden entregada");
+      setOrders((current) => current.filter((order) => order.id !== orderId));
+      setSelected(null);
+    });
+  }
+
+  function cancelOrder(orderId: string) {
+    if (!window.confirm("¿Cancelar este pedido? Esta acción no se puede deshacer desde aquí.")) return;
+    startTransition(async () => {
+      const result = await cancelOrderAction(orderId);
+      if (!result.ok) { toast.error(result.message); return; }
+      toast.success("Pedido cancelado");
       setOrders((current) => current.filter((order) => order.id !== orderId));
       setSelected(null);
     });
@@ -126,13 +137,10 @@ export function AdminDashboard({ initialOrders, setupMissing = false }: { initia
                   <h2 className="text-3xl font-black">{selected.customer_name}</h2>
                   <p className="text-cream/60">{selected.customer_phone}</p>
                 </div>
-                <button
-                  disabled={isPending}
-                  onClick={() => markDelivered(selected.id)}
-                  className="rounded-md bg-ember px-4 py-3 font-black text-white hover:bg-char disabled:opacity-60"
-                >
-                  Marcar entregado
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button disabled={isPending} onClick={() => markDelivered(selected.id)} className="rounded-md bg-ember px-4 py-3 font-black text-white hover:bg-char disabled:opacity-60">Marcar entregado</button>
+                  <button disabled={isPending} onClick={() => cancelOrder(selected.id)} className="rounded-md border border-red-700 px-4 py-3 font-black text-red-700 hover:bg-red-50 disabled:opacity-60">Cancelar pedido</button>
+                </div>
               </div>
               <div className="mt-6 grid gap-5 lg:grid-cols-2">
                 <div>

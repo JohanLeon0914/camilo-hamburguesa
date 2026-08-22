@@ -85,8 +85,8 @@ export function ProductCard({ product, variant = "card", reverse = false }: Prod
       {content}
     </article>
     {showLoginModal && (
-      <div className="fixed inset-0 z-[60] grid place-items-center bg-char/60 p-4" role="dialog" aria-modal="true" aria-labelledby={`login-product-${product.id}`}>
-        <div className="w-full max-w-md rounded-lg bg-paper p-6 text-char shadow-2xl">
+      <div className="fixed inset-0 z-[60] grid place-items-center bg-char/60 p-4" onClick={() => setShowLoginModal(false)} role="dialog" aria-modal="true" aria-labelledby={`login-product-${product.id}`}>
+        <div className="w-full max-w-md rounded-lg bg-paper p-6 text-char shadow-2xl" onClick={(event) => event.stopPropagation()}>
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="font-black uppercase text-ember">Antes de ordenar</p>
@@ -104,4 +104,3 @@ export function ProductCard({ product, variant = "card", reverse = false }: Prod
     </>
   );
 }
-

@@ -21,7 +21,6 @@ export default async function AdminPage() {
   const { data: rawInitialOrders } = await supabase
     .from("orders")
     .select("*, order_items(*)")
-    .eq("payment_status", "paid")
     .in("status", ["pending", "preparing", "ready"])
     .order("created_at", { ascending: true });
   const initialOrders = (rawInitialOrders ?? []) as unknown as OrderWithItems[];

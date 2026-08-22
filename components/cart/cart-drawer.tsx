@@ -128,14 +128,14 @@ export function CartDrawer() {
         </aside>
       </div>
       {showLoginModal && (
-        <div className="fixed inset-0 z-[60] grid place-items-center bg-char/60 p-4" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
-          <div className="w-full max-w-md rounded-lg bg-paper p-6 text-char shadow-2xl">
+        <div className="fixed inset-0 z-[60] grid place-items-center bg-char/60 p-4" onClick={() => setShowLoginModal(false)} role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
+          <div className="w-full max-w-md rounded-lg bg-paper p-6 text-char shadow-2xl" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="font-black uppercase text-ember">Antes de ordenar</p>
                 <h2 id="login-modal-title" className="mt-1 text-2xl font-black text-white">Inicia sesión con Google</h2>
               </div>
-              <button type="button" onClick={() => setShowLoginModal(false)} className="rounded-md p-2 hover:bg-surface" aria-label="Cerrar ventana"><X size={20} /></button>
+              <button type="button" onClick={() => setShowLoginModal(false)} className="rounded-md p-2 hover:bg-surface text-white" aria-label="Cerrar ventana"><X size={20} /></button>
             </div>
             <p className="mt-4 text-sm text-char/70 text-white">Necesitamos tu cuenta para guardar la dirección, crear el pedido y mostrarte el estado del pago.</p>
             <button type="button" onClick={signInWithGoogle} disabled={!getSupabaseBrowserEnv()} className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-ember px-5 py-3 font-black text-white transition hover:bg-char disabled:opacity-60">

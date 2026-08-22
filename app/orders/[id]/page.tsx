@@ -5,12 +5,10 @@ import { createClient } from "@/lib/supabase/server";
 import { formatCOP, formatDateCO, shortOrderId } from "@/lib/utils";
 import type { OrderWithItems } from "@/lib/order-types";
 import { getOrderStatusLabel } from "@/lib/order-status";
-import { syncMercadoPagoPayment } from "@/lib/mercadopago";
-import { PaymentStatusSync } from "@/components/orders/payment-status-sync";
 
 export const dynamic = "force-dynamic";
 
-export default async function OrderDetailPage({ params, searchParams }: { params: { id: string }; searchParams: { payment?: string; payment_id?: string } }) {
+export default async function OrderDetailPage({ params }: { params: { id: string } }) {
   if (!getSupabaseBrowserEnv()) notFound();
 
   const supabase = createClient();
@@ -22,20 +20,6 @@ export default async function OrderDetailPage({ params, searchParams }: { params
   const order = rawOrder as unknown as OrderWithItems | null;
 
   if (!order) notFound();
-
-  if (searchParams.payment_id && order.payment_status !== "paid") {
-    try {
-      await syncMercadoPagoPayment(order.id, searchParams.payment_id);
-      const refreshed = await supabase
-        .from("orders")
-        .select("*, order_items(*)")
-        .eq("id", params.id)
-        .single();
-      rawOrder = refreshed.data;
-    } catch (error) {
-      console.error("Mercado Pago return confirmation failed", error);
-    }
-  }
 
   const currentOrder = rawOrder as unknown as OrderWithItems;
 
@@ -51,8 +35,6 @@ export default async function OrderDetailPage({ params, searchParams }: { params
           </div>
           <span className="rounded-md bg-char px-3 py-1 text-sm font-black uppercase text-white">{getOrderStatusLabel(currentOrder.status)}</span>
         </div>
-
-        {searchParams.payment === "success" && <PaymentStatusSync orderId={currentOrder.id} paymentId={searchParams.payment_id} initialPaid={currentOrder.payment_status === "paid"} />}
 
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           <div>
@@ -94,4 +76,3 @@ function Row({ label, value, strong = false }: { label: string; value: string; s
     </div>
   );
 }
-

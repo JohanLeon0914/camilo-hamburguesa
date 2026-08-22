@@ -51,9 +51,9 @@ La migración crea tablas, índices, constraints, RLS, trigger de perfiles, lím
 
 ## Flujo
 
-### Mercado Pago / PSE
+### Confirmación de pago por WhatsApp
 
-Ejecuta `supabase/migrations/202608210001_mercadopago_payments.sql`. Agrega `MERCADOPAGO_ACCESS_TOKEN` al entorno del servidor y registra `https://TU_DOMINIO/api/webhooks/mercadopago` como notificación de pagos en Mercado Pago. Checkout Pro permite ofrecer PSE en Colombia; el cliente será redirigido a Mercado Pago y el webhook verificará el pago consultando su API antes de mostrar la orden al administrador.
+El checkout crea el pedido y abre WhatsApp al número del negocio con el detalle completo del pedido. El cliente puede adjuntar allí la captura del pago realizado. La migración `202608220001_remove_mercadopago.sql` elimina las columnas y estados específicos de Mercado Pago.
 
 El cliente puede navegar el menú sin sesión, agregar productos al carrito y conservarlos aunque salga de la página. Para confirmar pedido debe iniciar sesión con Google. El servidor envía únicamente `productId`, cantidad y dirección; Supabase calcula precios, subtotal, descuento y total.
 
